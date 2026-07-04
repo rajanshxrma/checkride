@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api-and-ui-suites:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check out the system under test
+        uses: actions/checkout@v4
+        with:
+          repository: rajanshxrma/aerolane
+          path: aerolane
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Boot the stack
+        run: docker compose -f aerolane/docker-compose.yml up -d --build
+
+      - name: Wait for health
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fs http://localhost:8080/actuator/health > /dev/null; then
+              echo "app is up"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "app never came up"
+          docker compose -f aerolane/docker-compose.yml logs app
+          exit 1
+
+      - name: API suite
+        run: mvn -B -Papi test
+
+      - name: UI suite (headless Chrome)
+        run: mvn -B -Pui test
+
+      - name: Upload test output
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            target/surefire-reports/
+            target/allure-results/
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f aerolane/docker-compose.yml down -v
