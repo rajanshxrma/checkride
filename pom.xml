@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.checkride</groupId>
+    <artifactId>checkride</artifactId>
+    <version>0.1.0</version>
+    <name>checkride</name>
+    <description>QA automation framework targeting the aerolane app: API, UI, integration and performance suites</description>
+
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <junit.version>5.10.2</junit.version>
+        <restassured.version>5.4.0</restassured.version>
+        <selenium.version>4.21.0</selenium.version>
+        <testcontainers.version>1.19.8</testcontainers.version>
+        <assertj.version>3.25.3</assertj.version>
+        <allure.version>2.27.0</allure.version>
+        <gatling.version>3.10.5</gatling.version>
+        <gatling.plugin.version>4.8.2</gatling.plugin.version>
+        <surefire.version>3.2.5</surefire.version>
+        <!-- Overridden by profiles below -->
+        <surefire.groups></surefire.groups>
+        <surefire.excludedGroups>api,ui,integration</surefire.excludedGroups>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${restassured.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>${selenium.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-junit5</artifactId>
+            <version>${allure.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>${gatling.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+                <configuration>
+                    <groups>${surefire.groups}</groups>
+                    <excludedGroups>${surefire.excludedGroups}</excludedGroups>
+                    <systemPropertyVariables>
+                        <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>io.gatling</groupId>
+                <artifactId>gatling-maven-plugin</artifactId>
+                <version>${gatling.plugin.version}</version>
+                <configuration>
+                    <simulationClass>com.checkride.perf.BaselineLoadSimulation</simulationClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Fast confidence check: tagged smoke across api + ui -->
+        <profile>
+            <id>smoke</id>
+            <properties>
+                <surefire.groups>smoke</surefire.groups>
+                <surefire.excludedGroups>integration</surefire.excludedGroups>
+            </properties>
+        </profile>
+        <!-- REST Assured suites only (no browser needed) -->
+        <profile>
+            <id>api</id>
+            <properties>
+                <surefire.groups>api</surefire.groups>
+                <surefire.excludedGroups>integration</surefire.excludedGroups>
+            </properties>
+        </profile>
+        <!-- Selenium suites (needs Chrome) -->
+        <profile>
+            <id>ui</id>
+            <properties>
+                <surefire.groups>ui</surefire.groups>
+                <surefire.excludedGroups>integration</surefire.excludedGroups>
+            </properties>
+        </profile>
+        <!-- Full regression: everything tagged regression across api + ui -->
+        <profile>
+            <id>regression</id>
+            <properties>
+                <surefire.groups>regression</surefire.groups>
+                <surefire.excludedGroups>integration</surefire.excludedGroups>
+            </properties>
+        </profile>
+        <!-- Testcontainers: builds and boots the whole stack, then tests it -->
+        <profile>
+            <id>integration</id>
+            <properties>
+                <surefire.groups>integration</surefire.groups>
+                <surefire.excludedGroups></surefire.excludedGroups>
+            </properties>
+        </profile>
+    </profiles>
+</project>
