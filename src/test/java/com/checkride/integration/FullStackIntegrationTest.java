@@ -25,7 +25,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @Tag("integration")
 @Testcontainers
 @DisplayName("Full stack boots from source and behaves")
-class FullStackIT {
+class FullStackIntegrationTest {
 
     @Container
     static final DockerComposeContainer<?> STACK =
