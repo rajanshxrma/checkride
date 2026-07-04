@@ -1,0 +1,29 @@
+# Throwaway stack for the Testcontainers integration suite.
+# Builds aerolane from source — expects the app repo as a sibling checkout:
+#   Desktop/
+#     aerolane/
+#     checkride/
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: aerolane
+      POSTGRES_USER: aerolane
+      POSTGRES_PASSWORD: aerolane
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aerolane -d aerolane"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build:
+      context: ../../aerolane
+    environment:
+      SPRING_PROFILES_ACTIVE: postgres
+      DB_URL: jdbc:postgresql://db:5432/aerolane
+      DB_USER: aerolane
+      DB_PASSWORD: aerolane
+    depends_on:
+      db:
+        condition: service_healthy
