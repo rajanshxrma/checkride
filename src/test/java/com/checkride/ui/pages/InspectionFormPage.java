@@ -44,6 +44,8 @@ public class InspectionFormPage {
     }
 
     public void submit() {
-        driver.findElement(By.cssSelector("form button[type='submit']")).click();
+        // must be the dedicated id: a bare "form button[type=submit]" selector
+        // matches the nav's logout button first (learned that one from CI)
+        driver.findElement(By.id("save-inspection")).click();
     }
 }
