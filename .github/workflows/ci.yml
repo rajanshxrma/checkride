@@ -44,7 +44,9 @@ jobs:
         run: mvn -B -Papi test
 
       - name: UI suite (headless Chrome)
-        run: mvn -B -Pui test
+        run: xvfb-run --auto-servernum mvn -B -Pui test
+        env:
+          HEADLESS: "false"
 
       - name: Upload test output
         if: always()
