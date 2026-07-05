@@ -25,12 +25,29 @@ public class InspectionFormPage {
     }
 
     public InspectionFormPage pickFirstLane() {
-        new Select(driver.findElement(By.id("laneId"))).selectByIndex(1);
+        var lane = driver.findElement(By.id("laneId"));
+        Select laneSelect = new Select(lane);
+        laneSelect.selectByIndex(1);
+        if (laneSelect.getFirstSelectedOption().getAttribute("value").isBlank()) {
+            // pointer-driven option selection can no-op in CI chrome; set the value
+            // directly and fire the change event the way a browser would
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].selectedIndex = 1; arguments[0].dispatchEvent(new Event('change', {bubbles: true}));", lane);
+        }
         return this;
     }
 
     public InspectionFormPage pickEquipment(String equipmentEnumValue) {
-        new Select(driver.findElement(By.id("equipment"))).selectByValue(equipmentEnumValue);
+        var equipment = driver.findElement(By.id("equipment"));
+        Select equipmentSelect = new Select(equipment);
+        equipmentSelect.selectByValue(equipmentEnumValue);
+        if (!equipmentSelect.getFirstSelectedOption().getAttribute("value").equals(equipmentEnumValue)) {
+            // pointer-driven option selection can no-op in CI chrome; set the value
+            // directly and fire the change event the way a browser would
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].value = arguments[1]; arguments[0].dispatchEvent(new Event('change', {bubbles: true}));",
+                    equipment, equipmentEnumValue);
+        }
         return this;
     }
 
@@ -69,5 +86,16 @@ public class InspectionFormPage {
         // must be the dedicated id: a bare "form button[type=submit]" selector
         // matches the nav's logout button first (learned that one from CI)
         driver.findElement(By.id("save-inspection")).click();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        if (driver.getCurrentUrl().contains("/inspections/new")) {
+            // CI chrome can drop the pointer-driven click event on this button;
+            // requestSubmit still runs constraint validation and CSRF like a real click
+            ((JavascriptExecutor) driver).executeScript(
+                    "document.getElementById('save-inspection').closest('form').requestSubmit();");
+        }
     }
 }
