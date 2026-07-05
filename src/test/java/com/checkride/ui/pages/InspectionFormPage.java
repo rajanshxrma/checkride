@@ -2,6 +2,7 @@ package com.checkride.ui.pages;
 
 import com.checkride.support.Config;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
@@ -38,13 +39,20 @@ public class InspectionFormPage {
                 By.cssSelector("input[name='result'][value='" + passOrFail + "']"));
         radio.click();
         if (!radio.isSelected()) {
-            // headless Chrome occasionally swallows pointer clicks on tiny radio
-            // inputs (verified: DOM is fine, the click just no-ops). Keyboard
+            // pointer click can silently no-op on tiny (13px) native radio inputs
+            // depending on the click coordinate WebDriver computes. Keyboard
             // selection is how a keyboard-only user does it and is deterministic.
             radio.sendKeys(org.openqa.selenium.Keys.SPACE);
         }
         if (!radio.isSelected()) {
             radio.findElement(By.xpath("./ancestor::label")).click();
+        }
+        if (!radio.isSelected()) {
+            // last resort: drive the DOM node directly. This bypasses whatever
+            // native mouse-event coordinate math WebDriver used above and still
+            // fires the real click/input/change events the app listens for,
+            // since it calls the actual HTMLInputElement.click().
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", radio);
         }
         if (!radio.isSelected()) {
             throw new IllegalStateException("could not select result radio " + passOrFail);
