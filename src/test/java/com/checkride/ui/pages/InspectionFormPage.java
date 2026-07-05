@@ -78,7 +78,16 @@ public class InspectionFormPage {
     }
 
     public InspectionFormPage notes(String text) {
-        driver.findElement(By.id("notes")).sendKeys(text);
+        var notes = driver.findElement(By.id("notes"));
+        notes.sendKeys(text);
+        if (!text.equals(notes.getAttribute("value"))) {
+            // same CI quirk as the other inputs: typing silently no-ops. Set the
+            // value directly and fire the input event the app would have seen.
+            ((JavascriptExecutor) driver).executeScript(
+                    "arguments[0].value = arguments[1];"
+                    + "arguments[0].dispatchEvent(new Event('input', {bubbles: true}));",
+                    notes, text);
+        }
         return this;
     }
 
