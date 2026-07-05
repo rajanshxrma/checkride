@@ -38,8 +38,12 @@ public class InspectionFormPage {
                 By.cssSelector("input[name='result'][value='" + passOrFail + "']"));
         radio.click();
         if (!radio.isSelected()) {
-            // headless Chrome occasionally swallows clicks on tiny radio inputs;
-            // clicking the wrapping label is what a real user does anyway
+            // headless Chrome occasionally swallows pointer clicks on tiny radio
+            // inputs (verified: DOM is fine, the click just no-ops). Keyboard
+            // selection is how a keyboard-only user does it and is deterministic.
+            radio.sendKeys(org.openqa.selenium.Keys.SPACE);
+        }
+        if (!radio.isSelected()) {
             radio.findElement(By.xpath("./ancestor::label")).click();
         }
         if (!radio.isSelected()) {
