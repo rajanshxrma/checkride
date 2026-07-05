@@ -34,7 +34,17 @@ public class InspectionFormPage {
     }
 
     public InspectionFormPage chooseResult(String passOrFail) {
-        driver.findElement(By.cssSelector("input[name='result'][value='" + passOrFail + "']")).click();
+        var radio = driver.findElement(
+                By.cssSelector("input[name='result'][value='" + passOrFail + "']"));
+        radio.click();
+        if (!radio.isSelected()) {
+            // headless Chrome occasionally swallows clicks on tiny radio inputs;
+            // clicking the wrapping label is what a real user does anyway
+            radio.findElement(By.xpath("./ancestor::label")).click();
+        }
+        if (!radio.isSelected()) {
+            throw new IllegalStateException("could not select result radio " + passOrFail);
+        }
         return this;
     }
 

@@ -33,9 +33,17 @@ class InspectionFlowUiTest extends UiTestBase {
                 .submit();
 
         // if the browser blocked or the server rejected the submit, we're still
-        // on /inspections/new — fail HERE with a clear message (and forensics)
-        // instead of a vague flash-banner timeout later
-        wait.until(d -> !d.getCurrentUrl().contains("/inspections/new"));
+        // on /inspections/new — fail HERE and say exactly why: url + the
+        // validation errors the page is showing
+        try {
+            wait.until(d -> !d.getCurrentUrl().contains("/inspections/new"));
+        } catch (org.openqa.selenium.TimeoutException e) {
+            String fieldErrors = driver.findElements(org.openqa.selenium.By.cssSelector(".field-error"))
+                    .stream().map(org.openqa.selenium.WebElement::getText)
+                    .reduce("", (a, b) -> a + " | " + b);
+            throw new AssertionError("form did not submit; still on " + driver.getCurrentUrl()
+                    + "; field errors:" + fieldErrors, e);
+        }
 
         InspectionsListPage list = new InspectionsListPage(driver, wait);
         assertThat(list.flashText()).contains("Inspection logged");
