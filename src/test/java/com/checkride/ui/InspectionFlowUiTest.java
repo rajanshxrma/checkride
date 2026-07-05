@@ -32,6 +32,11 @@ class InspectionFlowUiTest extends UiTestBase {
                 .notes(marker)
                 .submit();
 
+        // if the browser blocked or the server rejected the submit, we're still
+        // on /inspections/new — fail HERE with a clear message (and forensics)
+        // instead of a vague flash-banner timeout later
+        wait.until(d -> !d.getCurrentUrl().contains("/inspections/new"));
+
         InspectionsListPage list = new InspectionsListPage(driver, wait);
         assertThat(list.flashText()).contains("Inspection logged");
         assertThat(list.firstRowEquipment()).isEqualTo("BAGGAGE CONVEYOR");

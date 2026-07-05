@@ -54,6 +54,7 @@ jobs:
           path: |
             target/surefire-reports/
             target/allure-results/
+            target/ui-failures/
 
       - name: Tear down
         if: always()
