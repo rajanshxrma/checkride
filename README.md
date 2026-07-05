@@ -27,7 +27,7 @@ git clone https://github.com/rajanshxrma/checkride && cd checkride
 mvn -Papi test
 ```
 
-Point the suites anywhere with `BASE_URL` (defaults to `http://localhost:8080`). Credentials override via `OFFICER_USER`/`OFFICER_PASSWORD` etc. — see `support/Config.java`.
+Point the suites anywhere with `BASE_URL` (defaults to `http://localhost:8090`, aerolane's default host port). Credentials override via `OFFICER_USER`/`OFFICER_PASSWORD` etc. — see `support/Config.java`.
 
 ## What's being tested and why
 

@@ -38,8 +38,8 @@ Unit tests live in the app repo next to the code they test (service logic, secur
 
 | Env | Base URL | How |
 |---|---|---|
-| Local | `http://localhost:8080` (default) | `docker compose up --build` in the app repo |
-| CI | `http://localhost:8080` on the runner | compose brought up in the workflow |
+| Local | `http://localhost:8090` (default) | `docker compose up --build` in the app repo |
+| CI | `http://localhost:8090` on the runner | compose brought up in the workflow |
 | Any other | set `BASE_URL` env var | suites are environment-agnostic by design |
 
 Credentials come from env vars with seeded-demo defaults (see `support/Config.java`).

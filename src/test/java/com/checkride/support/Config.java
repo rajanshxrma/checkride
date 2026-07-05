@@ -11,7 +11,9 @@ public final class Config {
     }
 
     public static String baseUrl() {
-        return env("BASE_URL", "http://localhost:8080");
+        // matches aerolane's default host port (8090 — its compose maps
+        // ${APP_PORT:-8090}:8080). Override with BASE_URL for any other env.
+        return env("BASE_URL", "http://localhost:8090");
     }
 
     public static String officerUser() {
